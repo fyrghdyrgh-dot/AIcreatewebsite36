@@ -1,0 +1,1517 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HR 招聘工作台（侧栏）｜JD·题库·筛选·背调</title>
+  <meta name="description" content="侧栏工作台风格的 HR 招聘/面试工作流：JD 生成、面试题库、简历筛选、背调话术与任务卡片。支持分类、搜索、收藏、最近使用与模板库；纯前端单页可直接部署。" />
+  <meta property="og:title" content="HR 招聘工作台（侧栏）" />
+  <meta property="og:description" content="JD·题库·筛选·背调 + 工作流 + 任务卡片。" />
+  <meta property="og:type" content="website" />
+  <style>
+    :root{
+      --bg:#0b1220;
+      --paper:#0f172a;
+      --paper2:#111c33;
+      --text:#e6edf7;
+      --muted: rgba(230,237,247,.68);
+      --line: rgba(230,237,247,.12);
+      --shadow: 0 18px 46px rgba(0,0,0,.42);
+      --shadow2: 0 44px 120px rgba(0,0,0,.58);
+      --radius: 18px;
+      --hot:#60a5fa;
+      --hot2:#34d399;
+      --violet:#a78bfa;
+      --amber:#fbbf24;
+      --rose:#fb7185;
+      --cyan:#22d3ee;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      color:var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+      line-height:1.55;
+      background:
+        radial-gradient(980px 560px at 12% 0%, rgba(96,165,250,.18), transparent 62%),
+        radial-gradient(920px 560px at 92% 8%, rgba(52,211,153,.16), transparent 62%),
+        radial-gradient(820px 520px at 44% 108%, rgba(167,139,250,.14), transparent 62%),
+        linear-gradient(180deg, #070a12, var(--bg));
+    }
+    a{color:inherit;text-decoration:none}
+    button{font-family:inherit}
+
+    .layout{
+      min-height:100vh;
+      display:grid;
+      grid-template-columns: 320px 1fr;
+      gap: 14px;
+      padding: 14px;
+      max-width: 1360px;
+      margin: 0 auto;
+    }
+    @media (max-width: 980px){
+      .layout{grid-template-columns: 1fr; padding: 12px}
+    }
+
+    .sidebar{
+      position: sticky;
+      top: 12px;
+      align-self:start;
+      border:1px solid var(--line);
+      border-radius: 22px;
+      background:
+        radial-gradient(720px 420px at 14% 10%, rgba(96,165,250,.20), transparent 60%),
+        radial-gradient(620px 420px at 86% 14%, rgba(52,211,153,.16), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.04));
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    @media (max-width: 980px){
+      .sidebar{position: relative; top: 0}
+    }
+
+    .side-h{
+      padding: 14px 14px 10px;
+      border-bottom: 1px solid rgba(230,237,247,.10);
+      display:flex;align-items:flex-start;justify-content:space-between;gap:10px;
+    }
+    .brand{display:flex;align-items:center;gap:10px}
+    .logo{
+      width:38px;height:38px;border-radius:16px;
+      background:
+        radial-gradient(12px 12px at 30% 30%, rgba(255,255,255,.20), transparent 62%),
+        linear-gradient(135deg, rgba(96,165,250,1), rgba(52,211,153,.92));
+      box-shadow: 0 18px 44px rgba(96,165,250,.14);
+      flex: 0 0 auto;
+    }
+    .brand-text{display:flex;flex-direction:column;line-height:1.1}
+    .brand-title{font-weight:980;letter-spacing:.2px}
+    .brand-sub{margin-top:2px;color: var(--muted);font-size:12px}
+    .badge{
+      display:inline-flex;align-items:center;gap:8px;
+      font-size:12px;
+      color: rgba(230,237,247,.86);
+      border:1px solid rgba(230,237,247,.12);
+      background: rgba(255,255,255,.06);
+      border-radius: 999px;
+      padding: 6px 10px;
+      white-space:nowrap;
+    }
+    .badge .spark{width:10px;height:10px;border-radius:3px;background: linear-gradient(135deg, var(--hot), var(--hot2))}
+
+    .side-b{padding: 12px 14px 14px}
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;gap:8px;
+      border:1px solid rgba(230,237,247,.12);
+      background: rgba(255,255,255,.06);
+      color: rgba(230,237,247,.92);
+      border-radius:999px;
+      padding:10px 12px;
+      font-size:13px;
+      cursor:pointer;
+      user-select:none;
+      transition: transform .12s ease, border-color .12s ease, background .12s ease;
+    }
+    .btn:hover{transform: translateY(-1px); border-color: rgba(52,211,153,.22); background: rgba(255,255,255,.10)}
+    .btn.primary{
+      background: linear-gradient(135deg, rgba(96,165,250,1), rgba(52,211,153,.92));
+      color:#041019;
+      border-color: rgba(96,165,250,.24);
+      font-weight:980;
+    }
+    .btn.ghost{background:transparent}
+
+    .search{
+      display:flex;gap:10px;flex-wrap:wrap;
+      padding: 12px;
+      border-radius: 18px;
+      border:1px solid rgba(230,237,247,.12);
+      background: rgba(255,255,255,.06);
+    }
+    .input{
+      flex: 1;
+      min-width: 180px;
+      border:1px solid rgba(230,237,247,.12);
+      border-radius: 14px;
+      padding: 10px 12px;
+      background: rgba(2,6,23,.46);
+      outline: none;
+      color: var(--text);
+    }
+    .input:focus{border-color: rgba(96,165,250,.34); box-shadow: 0 0 0 4px rgba(96,165,250,.12)}
+
+    .mini{
+      display:inline-flex;align-items:center;justify-content:center;
+      border:1px solid rgba(230,237,247,.12);
+      background: rgba(255,255,255,.06);
+      color: rgba(230,237,247,.92);
+      border-radius: 999px;
+      padding: 8px 10px;
+      font-size: 12px;
+      cursor:pointer;
+      user-select:none;
+      transition: transform .12s ease, border-color .12s ease, background .12s ease;
+    }
+    .mini:hover{transform: translateY(-1px); border-color: rgba(52,211,153,.22); background: rgba(255,255,255,.10)}
+    .mini.primary{
+      background: linear-gradient(135deg, rgba(96,165,250,1), rgba(52,211,153,.92));
+      color:#041019;
+      border-color: rgba(96,165,250,.24);
+      font-weight:980;
+    }
+    .hint{margin-top: 8px;color: var(--muted);font-size: 12px}
+
+    .side-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top: 12px}
+    .side-nav{display:flex;flex-direction:column;gap:8px;margin-top: 12px}
+    .navbtn{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      border:1px solid rgba(230,237,247,.12);
+      background: rgba(255,255,255,.06);
+      border-radius: 18px;
+      padding: 10px 12px;
+      cursor:pointer;
+      transition: transform .12s ease, border-color .12s ease, background .12s ease;
+    }
+    .navbtn:hover{transform: translateY(-1px); border-color: rgba(96,165,250,.26); background: rgba(255,255,255,.10)}
+    .navleft{display:flex;align-items:center;gap:10px}
+    .ic{
+      width:34px;height:34px;border-radius: 14px;
+      display:flex;align-items:center;justify-content:center;
+      background: radial-gradient(10px 10px at 30% 30%, rgba(255,255,255,.18), transparent 62%),
+        linear-gradient(135deg, rgba(96,165,250,.92), rgba(52,211,153,.86));
+      color:#041019;font-weight: 980;
+      box-shadow: 0 18px 44px rgba(96,165,250,.12);
+      flex: 0 0 auto;
+    }
+    .nt{font-weight:980}
+    .ns{color: var(--muted);font-size:12px;margin-top:2px}
+
+    .main{
+      border:1px solid var(--line);
+      border-radius: 22px;
+      background: rgba(255,255,255,.06);
+      box-shadow: var(--shadow2);
+      overflow:hidden;
+    }
+    .top{
+      padding: 14px 14px 10px;
+      border-bottom: 1px solid rgba(230,237,247,.10);
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap: 10px;
+      background:
+        radial-gradient(920px 420px at 14% 10%, rgba(96,165,250,.18), transparent 60%),
+        radial-gradient(820px 420px at 86% 14%, rgba(52,211,153,.14), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.06));
+    }
+    .top .ttl{font-weight:980;font-size:16px}
+    .top .sub{color: var(--muted);font-size:12px;margin-top:2px}
+    .top-actions{display:flex;gap:10px;flex-wrap:wrap}
+
+    .content{padding: 12px 14px 14px; display:flex; flex-direction:column; gap: 14px}
+
+    .section{
+      border:1px solid rgba(230,237,247,.12);
+      border-radius: 22px;
+      background: rgba(2,6,23,.22);
+      overflow:hidden;
+    }
+    .section .sh{
+      padding: 14px 14px 10px;
+      border-bottom: 1px solid rgba(230,237,247,.10);
+      display:flex;align-items:flex-end;justify-content:space-between;gap:10px;
+      background: rgba(255,255,255,.04);
+    }
+    .section .sh .ttl{font-weight:980}
+    .section .sh .sub{color: var(--muted);font-size:12px;margin-top:2px}
+    .section .sb{padding: 12px 14px 14px}
+
+    .toolgrid{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    @media (max-width: 1120px){.toolgrid{grid-template-columns: repeat(2,1fr)}}
+    @media (max-width: 640px){.toolgrid{grid-template-columns: 1fr}}
+
+    .card{
+      border-radius: 18px;
+      border:1px solid rgba(230,237,247,.12);
+      background: rgba(255,255,255,.06);
+      padding: 12px;
+      transition: transform .12s ease, border-color .12s ease, background .12s ease;
+      position:relative;
+      overflow:hidden;
+      min-height: 132px;
+      display:flex;flex-direction:column;gap:10px;
+    }
+    .card:hover{transform: translateY(-1px); border-color: rgba(96,165,250,.26); background: rgba(255,255,255,.10)}
+    .card .row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+    .card .name{font-weight: 980; letter-spacing:.2px}
+    .card .desc{color: var(--muted); font-size:12px}
+    .tags{display:flex;gap:6px;flex-wrap:wrap}
+    .tag{
+      font-size: 11px;
+      color: rgba(230,237,247,.88);
+      border:1px solid rgba(230,237,247,.12);
+      background: rgba(255,255,255,.06);
+      padding: 5px 8px;
+      border-radius: 999px;
+      white-space:nowrap;
+    }
+    .actions2{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto}
+    .star{
+      width:36px;height:36px;border-radius: 12px;
+      border:1px solid rgba(230,237,247,.12);
+      background: rgba(255,255,255,.06);
+      cursor:pointer;
+      display:flex;align-items:center;justify-content:center;
+      transition: transform .12s ease, border-color .12s ease, background .12s ease;
+    }
+    .star:hover{transform: translateY(-1px); border-color: rgba(251,113,133,.30); background: rgba(251,113,133,.10)}
+    .star.on{border-color: rgba(251,113,133,.44); background: rgba(251,113,133,.14)}
+    .star svg{width:18px;height:18px}
+
+    .inline-ad{
+      border-radius: 18px;
+      border:1px dashed rgba(96,165,250,.30);
+      background:
+        radial-gradient(520px 240px at 16% 10%, rgba(96,165,250,.16), transparent 60%),
+        radial-gradient(520px 240px at 86% 10%, rgba(52,211,153,.14), transparent 60%),
+        linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+      padding: 14px;
+      display:flex;
+      gap: 12px;
+      align-items:flex-start;
+      min-height: 132px;
+    }
+    .inline-ad .ad-ic{
+      width:40px;height:40px;border-radius: 16px;
+      background: linear-gradient(135deg, rgba(96,165,250,1), rgba(52,211,153,.92));
+      box-shadow: 0 18px 44px rgba(96,165,250,.14);
+      flex: 0 0 auto;
+    }
+    .inline-ad .ad-title{font-weight: 980}
+    .inline-ad .ad-desc{color: var(--muted); font-size: 12px; margin-top: 4px}
+    .inline-ad .ad-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top: 10px}
+
+    .empty{
+      padding: 18px;
+      border-radius: 18px;
+      border:1px dashed rgba(230,237,247,.22);
+      background: rgba(255,255,255,.04);
+      color: rgba(230,237,247,.86);
+    }
+
+    .two{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    @media (max-width: 980px){.two{grid-template-columns: 1fr}}
+    .box{
+      border:1px solid rgba(230,237,247,.12);
+      background: rgba(255,255,255,.06);
+      border-radius: 18px;
+      padding: 12px;
+    }
+    .box .h{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .box .t{font-weight:980}
+    .box ul{margin:10px 0 0;padding-left:18px;color: rgba(230,237,247,.84)}
+    .box li{margin:6px 0}
+    .small{color: var(--muted); font-size: 12px; margin-top: 6px}
+    .taskrow{display:flex;gap:10px;flex-wrap:wrap;margin-top: 10px}
+
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      padding: 10px 12px;
+      border-radius: 999px;
+      border:1px solid rgba(230,237,247,.14);
+      background: rgba(2,6,23,.72);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 18px 46px rgba(0,0,0,.44);
+      color: rgba(230,237,247,.92);
+      font-size: 13px;
+      display:none;
+      z-index: 140;
+      max-width: calc(100% - 24px);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .toast.show{display:block}
+
+    .modal{
+      position: fixed;
+      inset:0;
+      background: rgba(0,0,0,.62);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding: 16px;
+      z-index: 120;
+    }
+    .modal.show{display:flex}
+    .dialog{
+      width: min(860px, 100%);
+      border-radius: 22px;
+      border:1px solid rgba(230,237,247,.16);
+      background:
+        radial-gradient(920px 420px at 14% 10%, rgba(96,165,250,.22), transparent 60%),
+        radial-gradient(820px 420px at 86% 14%, rgba(52,211,153,.18), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+      box-shadow: 0 46px 130px rgba(0,0,0,.62);
+      overflow:hidden;
+    }
+    .dialog .dh{padding: 14px 14px 10px; display:flex;align-items:flex-start;justify-content:space-between;gap:10px;border-bottom:1px solid rgba(230,237,247,.12)}
+    .dialog .dh .t{font-weight:980}
+    .dialog .db{padding: 12px 14px 14px; color: rgba(230,237,247,.86)}
+    .closex{
+      border:1px solid rgba(230,237,247,.12);
+      background: rgba(255,255,255,.06);
+      border-radius: 12px;
+      width: 38px;
+      height: 38px;
+      cursor:pointer;
+      display:flex;align-items:center;justify-content:center;
+      color: rgba(230,237,247,.92);
+    }
+    .closex:hover{background: rgba(255,255,255,.10)}
+    .dialog ul{margin: 10px 0 0; padding-left: 18px}
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar" aria-label="侧栏">
+      <div class="side-h">
+        <div class="brand">
+          <div class="logo" aria-hidden="true"></div>
+          <div class="brand-text">
+            <div class="brand-title">HR 招聘工作台</div>
+            <div class="brand-sub">侧栏工作流 · 任务卡片 · 工具模板</div>
+          </div>
+        </div>
+        <div class="badge"><span class="spark" aria-hidden="true"></span>hr3</div>
+      </div>
+
+      <div class="side-b">
+        <div class="search" role="search">
+          <input class="input" id="q3" placeholder="搜索：JD / ATS / 题库 / 背调 / Offer…" autocomplete="off" />
+          <button class="btn" id="clear3" type="button" data-event="hr3_search_clear">清空</button>
+        </div>
+        <div class="hint">侧栏用于导航与任务；主区展示工具、模板与工作流。</div>
+
+        <div class="side-actions">
+          <button class="btn ghost" id="showFavs3" type="button" data-event="hr3_side_favs">只看收藏</button>
+          <button class="btn primary" id="submitTool3" type="button" data-event="hr3_side_action">快速加任务</button>
+          <a class="btn" href="https://www.1bgp.com/" target="_blank" rel="noopener noreferrer" data-event="hr3_side_1bgp">部署推荐</a>
+        </div>
+
+        <div class="side-nav" aria-label="快捷导航">
+          <a class="navbtn" href="#hr3-workflow" data-event="hr3_side_workflow">
+            <div class="navleft">
+              <div class="ic" aria-hidden="true">流</div>
+              <div>
+                <div class="nt">工作流</div>
+                <div class="ns">需求→筛选→面试→背调→Offer</div>
+              </div>
+            </div>
+            <span class="tag">SOP</span>
+          </a>
+          <a class="navbtn" href="#hr3-tasks" data-event="hr3_side_tasks">
+            <div class="navleft">
+              <div class="ic" aria-hidden="true">务</div>
+              <div>
+                <div class="nt">任务卡片</div>
+                <div class="ns">本地保存 · 简单可用</div>
+              </div>
+            </div>
+            <span class="tag">todo</span>
+          </a>
+          <a class="navbtn" href="#hr3-toolbox" data-event="hr3_side_toolbox">
+            <div class="navleft">
+              <div class="ic" aria-hidden="true">工</div>
+              <div>
+                <div class="nt">工具库</div>
+                <div class="ns">按场景组织与搜索</div>
+              </div>
+            </div>
+            <span class="tag">tools</span>
+          </a>
+          <a class="navbtn" href="#hr3-templates" data-event="hr3_side_templates">
+            <div class="navleft">
+              <div class="ic" aria-hidden="true">模</div>
+              <div>
+                <div class="nt">模板库</div>
+                <div class="ns">JD/评分/背调/Offer</div>
+              </div>
+            </div>
+            <span class="tag">copy</span>
+          </a>
+          <a class="navbtn" href="#hr3-playbook" data-event="hr3_side_playbook">
+            <div class="navleft">
+              <div class="ic" aria-hidden="true">清</div>
+              <div>
+                <div class="nt">清单库</div>
+                <div class="ns">红线/黄线/要点卡</div>
+              </div>
+            </div>
+            <span class="tag">check</span>
+          </a>
+          <button class="navbtn" id="fabTop3" type="button" data-event="hr3_side_top">
+            <div class="navleft">
+              <div class="ic" aria-hidden="true">顶</div>
+              <div>
+                <div class="nt">回到顶部</div>
+                <div class="ns">快速返回</div>
+              </div>
+            </div>
+            <span class="tag">top</span>
+          </button>
+        </div>
+
+        <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap; justify-content:space-between; align-items:center">
+          <a class="mini" href="#" id="openDisclaimer3" data-event="hr3_open_disclaimer">使用说明</a>
+          <a class="mini" href="#" id="openPrivacy3" data-event="hr3_open_privacy">隐私说明</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main" aria-label="主内容">
+      <div class="top">
+        <div>
+          <div class="ttl">把招聘做成“可复用的工作流”</div>
+          <div class="sub">工具 + 模板 + 清单 + 任务卡片：保证口径一致、行动闭环、可复盘。</div>
+        </div>
+        <div class="top-actions">
+          <button class="btn" type="button" id="recMode3" data-event="hr3_rec_toggle">切换：推荐/最近</button>
+          <a class="btn primary" href="https://www.1bgp.com/" target="_blank" rel="noopener noreferrer" data-event="hr3_top_1bgp">部署到内网</a>
+        </div>
+      </div>
+
+      <div class="content">
+        <section class="section" id="hr3-workflow" aria-label="工作流">
+          <div class="sh">
+            <div>
+              <div class="ttl">工作流（SOP）</div>
+              <div class="sub">把每一步写成“动作 + 产出物 + 风险点”</div>
+            </div>
+            <div class="badge"><span class="spark" aria-hidden="true"></span>hr workflow</div>
+          </div>
+          <div class="sb">
+            <div class="two">
+              <div class="box">
+                <div class="h">
+                  <div class="t">1) 需求澄清</div>
+                  <button class="mini primary" type="button" id="copyNeed3" data-event="hr3_copy_need">复制要点</button>
+                </div>
+                <div class="small">把“岗位目标”说清楚，才有正确画像与题库。</div>
+                <ul>
+                  <li>岗位目标：试用期 1-3 个可验证交付物</li>
+                  <li>关键协作：核心协作对象、冲突点与决策链</li>
+                  <li>能力权重：必须/加分/可培养</li>
+                  <li>风险点：红线与黄线（背调/合规/稳定性）</li>
+                </ul>
+              </div>
+              <div class="box">
+                <div class="h">
+                  <div class="t">2) 写 JD + 画像</div>
+                  <button class="mini primary" type="button" id="copyJD3" data-event="hr3_copy_jd">复制结构</button>
+                </div>
+                <div class="small">JD 关键：写“产出与衡量指标”，不是写“工具列表”。</div>
+                <ul>
+                  <li>岗位目标 → 职责（动作/对象/结果）</li>
+                  <li>必备项（不可妥协）→ 可培养项</li>
+                  <li>岗位卖点：成长/资源/团队/业务空间</li>
+                  <li>面试流程与投递方式（含脱敏提醒）</li>
+                </ul>
+              </div>
+              <div class="box">
+                <div class="h">
+                  <div class="t">3) 渠道与触达</div>
+                  <button class="mini primary" type="button" id="copyChannel3" data-event="hr3_copy_channel">复制话术</button>
+                </div>
+                <div class="small">“触达话术”要围绕候选人的关切点。</div>
+                <ul>
+                  <li>渠道：内推/平台/社媒/猎头</li>
+                  <li>触达：一句话价值 + 亮点 + 行动项</li>
+                  <li>跟进节奏：D0/D2/D5 的提醒规则</li>
+                  <li>台账：成本、转化、质量</li>
+                </ul>
+              </div>
+              <div class="box">
+                <div class="h">
+                  <div class="t">4) 筛选 → 面试 → 背调</div>
+                  <button class="mini primary" type="button" id="copyFlow3" data-event="hr3_copy_flow">复制流程</button>
+                </div>
+                <div class="small">用“证据”替代“感觉”，用“规则”替代“纠结”。</div>
+                <ul>
+                  <li>初筛：画像口径 + 红线</li>
+                  <li>面试：结构化题库 + 评分表</li>
+                  <li>背调：授权 + 问题清单 + 红黄线</li>
+                  <li>Offer：薪酬结构说明 + 入职安排</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="hr3-tasks" aria-label="任务卡片">
+          <div class="sh">
+            <div>
+              <div class="ttl">任务卡片（本地保存）</div>
+              <div class="sub">用于把招聘动作拆成可执行的待办</div>
+            </div>
+            <div class="badge"><span class="spark" aria-hidden="true"></span>local</div>
+          </div>
+          <div class="sb">
+            <div class="two">
+              <div class="box">
+                <div class="h">
+                  <div class="t">新增任务</div>
+                  <span class="badge"><span class="spark" aria-hidden="true"></span>快捷</span>
+                </div>
+                <div class="small">示例：对齐画像 / 约面 / 发送背调授权 / 发 Offer。</div>
+                <input class="input" id="taskTitle3" placeholder="输入任务标题…" />
+                <div class="taskrow">
+                  <button class="mini primary" id="addTask3" type="button" data-event="hr3_task_add">添加</button>
+                  <button class="mini" id="seedTask3" type="button" data-event="hr3_task_seed">生成示例</button>
+                  <button class="mini" id="clearTask3" type="button" data-event="hr3_task_clear">清空任务</button>
+                </div>
+              </div>
+              <div class="box">
+                <div class="h">
+                  <div class="t">任务列表</div>
+                  <button class="mini" id="exportTask3" type="button" data-event="hr3_task_export">复制列表</button>
+                </div>
+                <div class="small">点击可完成/撤销，支持本地持久化。</div>
+                <div id="taskList3" style="margin-top:10px;display:flex;flex-direction:column;gap:8px"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="hr3-toolbox" aria-label="工具库">
+          <div class="sh">
+            <div>
+              <div class="ttl">工具库</div>
+              <div class="sub">搜索、分类、收藏与最近使用</div>
+            </div>
+            <div class="badge"><span class="spark" aria-hidden="true"></span>tools</div>
+          </div>
+          <div class="sb">
+            <div id="grid3" class="toolgrid" aria-label="工具卡片"></div>
+            <div id="empty3" class="empty" style="display:none;margin-top:10px"></div>
+          </div>
+        </section>
+
+        <section class="section" id="hr3-templates" aria-label="模板库">
+          <div class="sh">
+            <div>
+              <div class="ttl">模板库</div>
+              <div class="sub">JD/评分/背调/Offer/台账</div>
+            </div>
+            <div class="badge"><span class="spark" aria-hidden="true"></span>copy</div>
+          </div>
+          <div class="sb">
+            <div id="tplGrid3" class="toolgrid" aria-label="模板卡片"></div>
+          </div>
+        </section>
+
+        <section class="section" id="hr3-playbook" aria-label="清单库">
+          <div class="sh">
+            <div>
+              <div class="ttl">清单库</div>
+              <div class="sub">红线/黄线/要点卡，避免“感觉流”</div>
+            </div>
+            <div class="badge"><span class="spark" aria-hidden="true"></span>check</div>
+          </div>
+          <div class="sb">
+            <div class="two">
+              <div class="box">
+                <div class="h">
+                  <div class="t">简历筛选口径</div>
+                  <button class="mini primary" id="copyScreen3" type="button" data-event="hr3_copy_screen">复制</button>
+                </div>
+                <ul>
+                  <li>必备项：不满足直接淘汰</li>
+                  <li>可培养：面试重点验证</li>
+                  <li>淘汰项：高风险信号</li>
+                  <li>证据：项目/指标/复盘</li>
+                </ul>
+              </div>
+              <div class="box">
+                <div class="h">
+                  <div class="t">背调问题框架</div>
+                  <button class="mini primary" id="copyBgQ3" type="button" data-event="hr3_copy_bgq">复制</button>
+                </div>
+                <ul>
+                  <li>能力：核心优势与代表性交付</li>
+                  <li>协作：沟通方式、冲突处理</li>
+                  <li>诚信：是否存在不一致/夸大</li>
+                  <li>稳定性：离职原因是否一致</li>
+                </ul>
+              </div>
+              <div class="box">
+                <div class="h">
+                  <div class="t">Offer 沟通卡</div>
+                  <button class="mini primary" id="copyOffer3" type="button" data-event="hr3_copy_offer">复制</button>
+                </div>
+                <ul>
+                  <li>薪酬结构：固定/浮动/激励/福利</li>
+                  <li>入职安排：日期、地点、资料</li>
+                  <li>试用期目标：交付物与评价标准</li>
+                  <li>确认方式：截止时间、回复渠道</li>
+                </ul>
+              </div>
+              <div class="box">
+                <div class="h">
+                  <div class="t">面试官记录规范</div>
+                  <button class="mini primary" id="copyNote3" type="button" data-event="hr3_copy_note">复制</button>
+                </div>
+                <ul>
+                  <li>每个维度写“证据”，不写“感觉”</li>
+                  <li>给评分要说明理由与样例</li>
+                  <li>结论写“通过/保留/淘汰”并说明风险</li>
+                  <li>记录候选人提问与动机</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div style="color:rgba(230,237,247,.66);font-size:12px;margin: 4px 2px 20px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">
+          <div>© HR 招聘工作台 · 侧栏版 · 收藏/最近/任务卡片均为本地存储</div>
+          <div>
+            <a href="#" id="footerDisclaimer3" data-event="hr3_footer_disclaimer">使用说明</a>
+            <span style="opacity:.5"> · </span>
+            <a href="#" id="footerPrivacy3" data-event="hr3_footer_privacy">隐私说明</a>
+            <span style="opacity:.5"> · </span>
+            <a href="https://www.1bgp.com/" target="_blank" rel="noopener noreferrer" data-event="hr3_footer_1bgp">部署推荐</a>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="modal" id="mDisclaimer3" role="dialog" aria-modal="true" aria-label="使用说明">
+    <div class="dialog">
+      <div class="dh">
+        <div>
+          <div class="t">使用说明</div>
+          <div style="color:rgba(230,237,247,.66);font-size:12px;margin-top:2px">侧栏工作台：工作流 + 任务卡片 + 工具模板</div>
+        </div>
+        <button class="closex" id="closeDisclaimer3" type="button" aria-label="关闭">✕</button>
+      </div>
+      <div class="db">
+        <ul>
+          <li>搜索会匹配：名称/描述/分类/标签。</li>
+          <li>收藏、最近使用、任务列表保存在浏览器本地存储；清理缓存会导致数据丢失。</li>
+          <li>模板与清单为通用结构，请结合公司制度与合规要求校对。</li>
+          <li>外部链接由第三方提供，请自行甄别信息安全与隐私风险。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="mPrivacy3" role="dialog" aria-modal="true" aria-label="隐私说明">
+    <div class="dialog">
+      <div class="dh">
+        <div>
+          <div class="t">隐私说明</div>
+          <div style="color:rgba(230,237,247,.66);font-size:12px;margin-top:2px">本页面不采集账号信息，不上传数据</div>
+        </div>
+        <button class="closex" id="closePrivacy3" type="button" aria-label="关闭">✕</button>
+      </div>
+      <div class="db">
+        <ul>
+          <li>页面仅使用浏览器本地存储保存“收藏/最近打开/任务列表”。</li>
+          <li>涉及候选人信息时，建议对内容做脱敏处理（姓名/电话/邮箱/公司等）。</li>
+          <li>若复制到外部平台，请遵循公司合规要求与数据最小化原则。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast3" role="status" aria-live="polite"></div>
+
+  <script>
+    (function(){
+      const EVENT_PREFIX = "hr3_";
+      const LS_KEY = "aihr3:favs";
+      const REC_KEY = "aihr3:recent";
+      const TASK_KEY = "aihr3:tasks";
+      const MAX_REC = 12;
+      const INLINE_AD_AT = [7, 18];
+
+      const $ = (s, p=document) => p.querySelector(s);
+      const $$ = (s, p=document) => Array.from(p.querySelectorAll(s));
+
+      const els = {
+        q: $("#q3"),
+        clear: $("#clear3"),
+        grid: $("#grid3"),
+        empty: $("#empty3"),
+        tplGrid: $("#tplGrid3"),
+        showFavs: $("#showFavs3"),
+        submitTool: $("#submitTool3"),
+        fabTop: $("#fabTop3"),
+        recToggle: $("#recMode3"),
+        toast: $("#toast3"),
+        mDisclaimer: $("#mDisclaimer3"),
+        mPrivacy: $("#mPrivacy3"),
+        openDisclaimer: $("#openDisclaimer3"),
+        openPrivacy: $("#openPrivacy3"),
+        closeDisclaimer: $("#closeDisclaimer3"),
+        closePrivacy: $("#closePrivacy3"),
+        footerDisclaimer: $("#footerDisclaimer3"),
+        footerPrivacy: $("#footerPrivacy3"),
+        taskTitle: $("#taskTitle3"),
+        addTask: $("#addTask3"),
+        seedTask: $("#seedTask3"),
+        clearTask: $("#clearTask3"),
+        exportTask: $("#exportTask3"),
+        taskList: $("#taskList3"),
+        copyNeed: $("#copyNeed3"),
+        copyJD: $("#copyJD3"),
+        copyChannel: $("#copyChannel3"),
+        copyFlow: $("#copyFlow3"),
+        copyScreen: $("#copyScreen3"),
+        copyBgQ: $("#copyBgQ3"),
+        copyOffer: $("#copyOffer3"),
+        copyNote: $("#copyNote3"),
+      };
+
+      const state = {
+        q: "",
+        cat: "全部",
+        showFavs: false,
+        recMode: "recommend",
+        favs: new Set(),
+        recents: [],
+        tasks: [],
+      };
+
+      const TOOLS = [
+        { name:"岗位画像画布", cat:"JD生成", desc:"目标产出/协作对象/能力/风险四象限", url:"https://miro.com/", tags:["画像","画布","协作"] },
+        { name:"JD 结构清单", cat:"JD生成", desc:"职责/要求/加分项/流程快速对齐", url:"https://www.notion.so/", tags:["结构","清单","写作"] },
+        { name:"JD 卖点生成", cat:"JD生成", desc:"把岗位亮点写成候选人语言", url:"https://chat.openai.com/", tags:["卖点","吸引","文案"] },
+        { name:"能力模型拆解", cat:"JD生成", desc:"按能力维度拆解：基础/进阶/专家", url:"https://www.figma.com/", tags:["能力","模型","拆解"] },
+        { name:"薪酬结构说明卡", cat:"JD生成", desc:"固定/浮动/激励/福利清晰表达", url:"https://www.canva.com/", tags:["薪酬","沟通","表达"] },
+
+        { name:"结构化面试题库", cat:"面试题库", desc:"按维度组织：专业/业务/沟通/价值观", url:"https://www.notion.so/", tags:["结构化","题库","维度"] },
+        { name:"面试评分表", cat:"面试题库", desc:"证据+评分+建议，避免感觉流", url:"https://docs.google.com/", tags:["评分","证据","表格"] },
+        { name:"追问脚手架", cat:"面试题库", desc:"STAR 追问：量化/复盘/取舍", url:"https://www.notion.so/", tags:["STAR","追问","复盘"] },
+        { name:"案例面试题生成", cat:"面试题库", desc:"背景/目标/约束/交付物结构化生成", url:"https://chat.openai.com/", tags:["案例","题目","输出"] },
+        { name:"交叉面试设计", cat:"面试题库", desc:"交叉验证：同题不同问法", url:"https://miro.com/", tags:["交叉","验证","设计"] },
+
+        { name:"简历画像口径", cat:"简历筛选", desc:"必备项/可培养/淘汰项三段式", url:"https://www.notion.so/", tags:["画像","口径","规则"] },
+        { name:"筛选打分卡", cat:"简历筛选", desc:"把筛选从感觉变成分数", url:"https://docs.google.com/", tags:["打分","筛选","表格"] },
+        { name:"ATS 选型对比", cat:"简历筛选", desc:"漏斗、协作、合规、成本维度对比", url:"https://www.google.com/", tags:["ATS","选型","漏斗"] },
+        { name:"简历亮点抽取", cat:"简历筛选", desc:"抽取成果要素：背景/动作/结果/指标", url:"https://chat.openai.com/", tags:["抽取","成果","指标"] },
+        { name:"履历风险识别", cat:"简历筛选", desc:"空档/跳槽/不一致信号识别", url:"https://www.notion.so/", tags:["风险","复核","一致性"] },
+
+        { name:"背调问题清单", cat:"背调话术", desc:"围绕能力/诚信/稳定性/合作方式提问", url:"https://www.notion.so/", tags:["背调","问题","清单"] },
+        { name:"背调授权与告知", cat:"背调话术", desc:"授权书与告知文本模板（需校对法规）", url:"https://docs.google.com/", tags:["授权","合规","文本"] },
+        { name:"背调话术卡片", cat:"背调话术", desc:"开场/核验/提问/结束标准话术", url:"https://www.notion.so/", tags:["话术","电话","卡片"] },
+        { name:"红黄线判定", cat:"背调话术", desc:"背调结论规则：红线拒绝、黄线复核", url:"https://miro.com/", tags:["红线","黄线","规则"] },
+        { name:"事实核验清单", cat:"背调话术", desc:"学历/任职/职责/奖惩核验点", url:"https://www.google.com/", tags:["核验","事实","清单"] },
+
+        { name:"内推运营SOP", cat:"渠道投放", desc:"内推规则、物料、节奏与激励", url:"https://www.notion.so/", tags:["内推","运营","激励"] },
+        { name:"触达话术模板", cat:"渠道投放", desc:"私信/邮件/电话触达与跟进节奏", url:"https://www.notion.so/", tags:["触达","话术","跟进"] },
+        { name:"雇主品牌素材库", cat:"渠道投放", desc:"招聘海报、团队故事、岗位短视频脚本", url:"https://www.canva.com/", tags:["雇主品牌","素材","海报"] },
+        { name:"渠道成本台账", cat:"渠道投放", desc:"记录成本、转化与质量", url:"https://docs.google.com/", tags:["成本","渠道","质量"] },
+
+        { name:"Offer 邮件模板", cat:"Offer入职", desc:"Offer 结构化表达与行动项", url:"https://docs.google.com/", tags:["Offer","邮件","模板"] },
+        { name:"薪酬沟通话术", cat:"Offer入职", desc:"解释结构、涨幅逻辑与谈判边界", url:"https://www.notion.so/", tags:["谈判","沟通","边界"] },
+        { name:"入职资料清单", cat:"Offer入职", desc:"入职资料/合规告知/第一周计划", url:"https://docs.google.com/", tags:["入职","资料","清单"] },
+        { name:"试用期目标对齐", cat:"Offer入职", desc:"交付物、标准与复盘节奏", url:"https://miro.com/", tags:["试用期","目标","对齐"] },
+      ];
+
+      const TEMPLATES = [
+        { name:"JD 模板（通用版）", desc:"职责/要求/加分项/流程/投递方式", tags:["JD","通用","结构"], content: jdTpl() },
+        { name:"岗位画像模板", desc:"目标产出/协作/能力/风险四象限", tags:["画像","画布","复用"], content: personaTpl() },
+        { name:"简历筛选口径模板", desc:"必备/可培养/淘汰项 + 证据示例", tags:["筛选","口径","一致性"], content: screenTpl() },
+        { name:"结构化面试题库模板", desc:"维度题库 + 追问点 + 评分标准", tags:["面试","题库","维度"], content: ivTpl() },
+        { name:"面试评分表模板", desc:"证据/评分/结论/风险/建议", tags:["评分","记录","表"], content: scoreTpl() },
+        { name:"背调话术模板", desc:"开场—核验—提问—总结—结束", tags:["背调","话术","卡片"], content: bgTpl() },
+        { name:"Offer 邮件模板", desc:"结构化表达与行动项", tags:["Offer","邮件","模板"], content: offerTpl() },
+        { name:"招聘漏斗台账模板", desc:"链路数据表，便于复盘", tags:["漏斗","台账","复盘"], content: funnelTpl() },
+      ];
+
+      const RECOMMEND = [
+        { name:"JD 模板（通用版）", url:"#hr3-templates", desc:"快速成稿 + 结构校准", tag:"模板" },
+        { name:"面试评分表", url:"https://docs.google.com/", desc:"统一标准，减少误判", tag:"评分" },
+        { name:"背调话术卡片", url:"#hr3-templates", desc:"电话背调快速上手", tag:"背调" },
+        { name:"渠道成本台账", url:"https://docs.google.com/", desc:"不只看量，更看质量", tag:"台账" },
+        { name:"部署到内网", url:"https://www.1bgp.com/", desc:"团队共享与统一口径", tag:"部署" },
+      ];
+
+      function escapeHtml(s){
+        return String(s ?? "")
+          .replaceAll("&","&amp;")
+          .replaceAll("<","&lt;")
+          .replaceAll(">","&gt;")
+          .replaceAll("\"","&quot;")
+          .replaceAll("'","&#39;");
+      }
+      function normalize(s){ return (s || "").toLowerCase().trim(); }
+      function matchesQuery(item, q){
+        if(!q) return true;
+        const hay = [item.name, item.desc, item.cat, ...(item.tags || [])].join(" ").toLowerCase();
+        return hay.includes(q);
+      }
+
+      function loadFavs(){
+        try{
+          const raw = localStorage.getItem(LS_KEY);
+          if(!raw) return new Set();
+          const arr = JSON.parse(raw);
+          return new Set(Array.isArray(arr) ? arr : []);
+        }catch(_){ return new Set(); }
+      }
+      function saveFavs(set){
+        try{ localStorage.setItem(LS_KEY, JSON.stringify(Array.from(set))); }catch(_){}
+      }
+      function loadRecents(){
+        try{
+          const raw = localStorage.getItem(REC_KEY);
+          if(!raw) return [];
+          const arr = JSON.parse(raw);
+          return Array.isArray(arr) ? arr : [];
+        }catch(_){ return []; }
+      }
+      function saveRecents(arr){
+        try{ localStorage.setItem(REC_KEY, JSON.stringify(arr)); }catch(_){}
+      }
+      function pushRecent(name){
+        if(!name) return;
+        const list = loadRecents();
+        const next = [name, ...list.filter(x => x !== name)].slice(0, MAX_REC);
+        saveRecents(next);
+        state.recents = next;
+      }
+      function loadTasks(){
+        try{
+          const raw = localStorage.getItem(TASK_KEY);
+          if(!raw) return [];
+          const arr = JSON.parse(raw);
+          return Array.isArray(arr) ? arr : [];
+        }catch(_){ return []; }
+      }
+      function saveTasks(arr){
+        try{ localStorage.setItem(TASK_KEY, JSON.stringify(arr)); }catch(_){}
+      }
+
+      function toast(msg){
+        els.toast.textContent = msg;
+        els.toast.classList.add("show");
+        window.clearTimeout(toast._t);
+        toast._t = window.setTimeout(()=>els.toast.classList.remove("show"), 1700);
+      }
+      function pushEvent(name, extra){
+        const ev = { name: EVENT_PREFIX + name, ts: Date.now(), ...extra };
+        window.__events = window.__events || [];
+        window.__events.push(ev);
+      }
+      function copyText(text){
+        const t = String(text ?? "");
+        if(!t.trim()){
+          toast("没有可复制的内容");
+          return;
+        }
+        if(navigator.clipboard && navigator.clipboard.writeText){
+          navigator.clipboard.writeText(t).then(()=>toast("已复制")).catch(()=>fallbackCopy(t));
+        }else{
+          fallbackCopy(t);
+        }
+      }
+      function fallbackCopy(t){
+        const ta = document.createElement("textarea");
+        ta.value = t;
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        ta.style.top = "0";
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        try{ document.execCommand("copy"); toast("已复制"); }catch(_){ toast("复制失败"); }
+        document.body.removeChild(ta);
+      }
+
+      function starSvg(){
+        return `
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 2.8l2.9 6.1 6.7.9-4.9 4.7 1.2 6.6L12 18.7 6.1 21.1l1.2-6.6-4.9-4.7 6.7-.9L12 2.8z" stroke="rgba(230,237,247,.78)" stroke-width="1.6" />
+          </svg>
+        `;
+      }
+      function toggleFav(name){
+        if(state.favs.has(name)) state.favs.delete(name);
+        else state.favs.add(name);
+        saveFavs(state.favs);
+      }
+
+      function renderRecButton(){
+        els.recToggle.textContent = state.recMode === "recommend" ? "切换：最近" : "切换：推荐";
+      }
+
+      function renderTasks(){
+        const list = state.tasks;
+        if(!list.length){
+          els.taskList.innerHTML = `<div class="empty">暂无任务：在左侧输入一个动作，例如“约面—确认时间/会议链接”。</div>`;
+          return;
+        }
+        els.taskList.innerHTML = list.map((t, idx)=>{
+          const done = t.done ? "on" : "";
+          return `
+            <button class="navbtn ${done}" type="button" data-idx="${idx}" data-event="hr3_task_toggle" aria-label="${escapeHtml(t.title)}">
+              <div class="navleft">
+                <div class="ic" aria-hidden="true">${t.done ? "✔" : "□"}</div>
+                <div>
+                  <div class="nt">${escapeHtml(t.title)}</div>
+                  <div class="ns">${t.done ? "已完成" : "待处理"} · ${escapeHtml(t.tag || "招聘")}</div>
+                </div>
+              </div>
+              <span class="tag">${t.done ? "done" : "todo"}</span>
+            </button>
+          `;
+        }).join("");
+
+        $$("#taskList3 [data-idx]").forEach(btn=>{
+          btn.addEventListener("click", ()=>{
+            const idx = Number(btn.getAttribute("data-idx"));
+            if(Number.isNaN(idx)) return;
+            const item = state.tasks[idx];
+            if(!item) return;
+            item.done = !item.done;
+            saveTasks(state.tasks);
+            pushEvent("task_toggle", { idx, done: item.done });
+            renderTasks();
+          });
+        });
+      }
+
+      function renderTemplates(){
+        els.tplGrid.innerHTML = TEMPLATES.map((t) => {
+          const fav = state.favs.has(t.name);
+          return `
+            <div class="card">
+              <div class="row">
+                <div>
+                  <div class="name">${escapeHtml(t.name)}</div>
+                  <div class="desc">${escapeHtml(t.desc)}</div>
+                </div>
+                <button class="star ${fav ? "on":""}" type="button" aria-label="收藏" aria-pressed="${fav ? "true":"false"}" data-fav="${escapeHtml(t.name)}" data-event="hr3_fav_toggle_tpl">
+                  ${starSvg()}
+                </button>
+              </div>
+              <div class="tags">${(t.tags || []).map(tag=>`<span class="tag">${escapeHtml(tag)}</span>`).join("")}</div>
+              <div class="actions2">
+                <button class="mini primary" type="button" data-event="hr3_tpl_copy" data-copy="${escapeHtml(t.name)}">复制模板</button>
+                <button class="mini" type="button" data-event="hr3_tpl_preview" data-preview="${escapeHtml(t.name)}">预览</button>
+              </div>
+            </div>
+          `;
+        }).join("");
+
+        $$("#tplGrid3 button[data-fav]").forEach(btn=>{
+          btn.addEventListener("click", ()=>{
+            const name = btn.getAttribute("data-fav");
+            if(!name) return;
+            toggleFav(name);
+            pushEvent("fav_toggle", { name, from:"tpl" });
+            renderTemplates();
+            renderTools();
+          });
+        });
+        $$("#tplGrid3 button[data-copy]").forEach(btn=>{
+          btn.addEventListener("click", ()=>{
+            const name = btn.getAttribute("data-copy");
+            const t = TEMPLATES.find(x => x.name === name);
+            if(!t) return;
+            pushEvent("tpl_copy", { name });
+            copyText(t.content);
+          });
+        });
+        $$("#tplGrid3 button[data-preview]").forEach(btn=>{
+          btn.addEventListener("click", ()=>{
+            const name = btn.getAttribute("data-preview");
+            const t = TEMPLATES.find(x => x.name === name);
+            if(!t) return;
+            pushEvent("tpl_preview", { name });
+            openPreviewModal(t.name, t.content);
+          });
+        });
+      }
+
+      function openPreviewModal(title, content){
+        const modal = document.createElement("div");
+        modal.className = "modal show";
+        modal.setAttribute("role","dialog");
+        modal.setAttribute("aria-modal","true");
+        modal.innerHTML = `
+          <div class="dialog">
+            <div class="dh">
+              <div>
+                <div class="t">${escapeHtml(title)}</div>
+                <div style="color:rgba(230,237,247,.66);font-size:12px;margin-top:2px">预览内容可直接复制到文档中</div>
+              </div>
+              <button class="closex" type="button" aria-label="关闭">✕</button>
+            </div>
+            <div class="db">
+              <div class="box" style="margin-top:4px">
+                <textarea class="input" style="width:100%;min-height:320px;resize:vertical;line-height:1.55">${escapeHtml(content)}</textarea>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+                  <button class="mini primary" type="button" data-action="copy">复制内容</button>
+                  <button class="mini" type="button" data-action="close">关闭</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+        const close = ()=>{ modal.remove(); };
+        modal.addEventListener("click", (e)=>{ if(e.target === modal) close(); });
+        modal.querySelector(".closex").addEventListener("click", close);
+        modal.querySelector("[data-action='close']").addEventListener("click", close);
+        modal.querySelector("[data-action='copy']").addEventListener("click", ()=>{
+          const ta = modal.querySelector("textarea");
+          copyText(ta.value);
+        });
+      }
+
+      function renderTools(){
+        const q = normalize(state.q);
+        let list = TOOLS.filter(t => matchesQuery(t, q));
+        if(state.showFavs) list = list.filter(t => state.favs.has(t.name));
+
+        const nodes = [];
+        for(let i=0; i<list.length; i++){
+          if(INLINE_AD_AT.includes(i)){
+            nodes.push(renderInlineAd());
+          }
+          nodes.push(renderToolCard(list[i]));
+        }
+        els.grid.innerHTML = nodes.join("");
+
+        $$("#grid3 button[data-fav]").forEach(btn=>{
+          btn.addEventListener("click", ()=>{
+            const name = btn.getAttribute("data-fav");
+            if(!name) return;
+            toggleFav(name);
+            pushEvent("fav_toggle", { name, from:"tool" });
+            renderTools();
+            renderTemplates();
+          });
+        });
+        $$("#grid3 a[data-event='hr3_tool_open']").forEach(a=>{
+          a.addEventListener("click", ()=>{
+            const name = a.getAttribute("data-tool") || "";
+            pushEvent("tool_open", { name });
+            if(name) pushRecent(name);
+          }, { passive:true });
+        });
+        $$("#grid3 button[data-event='hr3_tool_copy']").forEach(btn=>{
+          btn.addEventListener("click", ()=>{
+            const copy = btn.getAttribute("data-copy") || "";
+            pushEvent("tool_copy", { copy });
+            copyText(copy);
+          });
+        });
+
+        const empty = !list.length;
+        els.empty.style.display = empty ? "block" : "none";
+        if(empty){
+          const label = state.showFavs ? "当前筛选没有收藏项" : "没有匹配结果";
+          els.empty.innerHTML = `
+            <div style="font-weight:980">${escapeHtml(label)}</div>
+            <div style="color:rgba(230,237,247,.66);font-size:12px;margin-top:6px">建议：更换关键词，或取消“只看收藏”。</div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+              <button class="mini primary" type="button" id="resetFilters3" data-event="hr3_reset_filters">重置筛选</button>
+              <a class="mini" href="https://www.1bgp.com/" target="_blank" rel="noopener noreferrer" data-event="hr3_cta_from_empty">看看部署方案</a>
+            </div>
+          `;
+          const reset = $("#resetFilters3");
+          reset && reset.addEventListener("click", ()=>{
+            state.q = "";
+            state.showFavs = false;
+            els.q.value = "";
+            els.showFavs.textContent = "只看收藏";
+            pushEvent("reset_filters");
+            renderTools();
+          });
+        }
+      }
+
+      function renderToolCard(item){
+        const fav = state.favs.has(item.name);
+        return `
+          <div class="card">
+            <div class="row">
+              <div>
+                <div class="name">${escapeHtml(item.name)}</div>
+                <div class="desc">${escapeHtml(item.desc)}</div>
+              </div>
+              <button class="star ${fav ? "on":""}" type="button" aria-label="收藏" aria-pressed="${fav ? "true" : "false"}" data-fav="${escapeHtml(item.name)}" data-event="hr3_fav_toggle">
+                ${starSvg()}
+              </button>
+            </div>
+            <div class="tags">${(item.tags || []).map(tag=>`<span class="tag">${escapeHtml(tag)}</span>`).join("")}</div>
+            <div class="actions2">
+              <a class="mini primary" href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer" data-event="hr3_tool_open" data-tool="${escapeHtml(item.name)}">访问</a>
+              <button class="mini" type="button" data-event="hr3_tool_copy" data-copy="${escapeHtml(item.name)}｜${escapeHtml(item.url)}">复制链接</button>
+              <span class="mini" style="pointer-events:none;opacity:.86">${escapeHtml(item.cat)}</span>
+            </div>
+          </div>
+        `;
+      }
+      function renderInlineAd(){
+        return `
+          <div class="inline-ad">
+            <div class="ad-ic" aria-hidden="true"></div>
+            <div style="flex:1">
+              <div class="ad-title">把工作台放到团队共享入口</div>
+              <div class="ad-desc">用于 HRBP 与面试官统一模板/题库/清单；也可部署成招聘素材站。</div>
+              <div class="ad-actions">
+                <a class="mini primary" href="https://www.1bgp.com/" target="_blank" rel="noopener noreferrer" data-event="hr3_ad_primary">查看方案</a>
+                <a class="mini" href="https://www.1bgp.com/" target="_blank" rel="noopener noreferrer" data-event="hr3_ad_secondary">进入官网</a>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      function openModal(modal){
+        modal.classList.add("show");
+        pushEvent("modal_open", { modal: modal.id });
+      }
+      function closeModal(modal){
+        modal.classList.remove("show");
+        pushEvent("modal_close", { modal: modal.id });
+      }
+
+      function jdTpl(){
+        return [
+          "【岗位名称】",
+          "【所属团队/汇报对象】",
+          "【工作地点/是否支持远程】",
+          "【岗位目标】一句话说明该岗位的核心产出与价值",
+          "",
+          "一、岗位职责（3-6条）",
+          "- ...（动作+对象+结果）",
+          "",
+          "二、任职要求（必备）",
+          "- ...（硬技能/经验/证书）",
+          "",
+          "三、加分项（可选）",
+          "- ...（领域经验/工具栈/行业）",
+          "",
+          "四、你将获得",
+          "- 成长路径/项目空间/团队氛围/福利等",
+          "",
+          "五、面试流程",
+          "- HR沟通 → 一面 → 二面/终面 → Offer",
+          "",
+          "六、投递方式",
+          "- 邮箱/内推/平台链接（建议含脱敏提醒）"
+        ].join("\\n");
+      }
+      function personaTpl(){
+        return [
+          "【岗位画像画布】",
+          "",
+          "1) 目标产出：试用期 1-3 个可验证交付物（含指标/时间）",
+          "2) 关键协作：主要合作角色/协作方式/冲突点",
+          "3) 核心能力：必备能力（不可妥协）/可培养能力",
+          "4) 风险点：误判点、履历风险信号、背调红黄线"
+        ].join("\\n");
+      }
+      function screenTpl(){
+        return [
+          "【简历筛选口径】",
+          "",
+          "必备项（不满足直接淘汰）",
+          "- ...（经验/领域/技能）",
+          "",
+          "可培养项（面试重点验证）",
+          "- ...（方法论/沟通/学习能力）",
+          "",
+          "淘汰项（高风险）",
+          "- ...（明显夸大、频繁跳槽无解释、经历不一致）",
+          "",
+          "证据示例",
+          "- 用什么经历证明？（项目/成果/指标/复盘）"
+        ].join("\\n");
+      }
+      function ivTpl(){
+        return [
+          "【结构化面试题库】",
+          "",
+          "维度A：专业能力",
+          "- 题1：... 追问：... 评分：...",
+          "",
+          "维度B：业务理解/问题解决",
+          "- 题2：... 追问：... 评分：...",
+          "",
+          "维度C：沟通协作",
+          "- 题3：... 追问：... 评分：...",
+          "",
+          "维度D：价值观/稳定性",
+          "- 题4：... 追问：... 评分：..."
+        ].join("\\n");
+      }
+      function scoreTpl(){
+        return [
+          "【面试评分表】",
+          "",
+          "候选人：",
+          "岗位：",
+          "面试官：",
+          "轮次：",
+          "",
+          "维度 | 证据 | 评分(1-5) | 备注",
+          "专业能力 | | |",
+          "业务理解 | | |",
+          "沟通协作 | | |",
+          "学习复盘 | | |",
+          "价值观匹配 | | |",
+          "",
+          "综合结论：通过 / 保留 / 淘汰",
+          "主要风险：",
+          "建议追问："
+        ].join("\\n");
+      }
+      function bgTpl(){
+        return [
+          "【背调话术】",
+          "",
+          "开场：您好，我是xx公司HR，候选人已授权本次背调，预计5-8分钟，方便吗？",
+          "核验：请确认您与候选人的关系（汇报线/共事时长/岗位）",
+          "能力：核心优势与代表性交付是什么？",
+          "协作：跨团队沟通/冲突处理表现如何？",
+          "稳定性：离职原因是否如候选人描述？",
+          "总结：感谢您的时间，我们会对信息保密并仅用于招聘评估。"
+        ].join("\\n");
+      }
+      function offerTpl(){
+        return [
+          "【Offer 邮件模板】",
+          "",
+          "Hi {姓名}，",
+          "很高兴通知你通过面试，现向你发出 {岗位} 的录用意向（Offer）。",
+          "",
+          "岗位信息：岗位/汇报对象/地点/入职日期",
+          "薪酬福利：固定/浮动/激励/福利",
+          "入职资料：资料清单/合规告知",
+          "确认方式：截止时间/回复渠道",
+          "",
+          "—— {HR姓名/联系方式}"
+        ].join("\\n");
+      }
+      function funnelTpl(){
+        return [
+          "【招聘漏斗台账】",
+          "",
+          "岗位 | 渠道 | 成本 | 简历 | 命中画像 | 约面 | 到面 | 通过 | Offer | 接受 | 入职 | 备注",
+          "---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ----",
+          ""
+        ].join("\\n");
+      }
+
+      function bind(){
+        els.q.addEventListener("input", ()=>{
+          state.q = els.q.value || "";
+          pushEvent("search_input", { q: state.q.slice(0, 60) });
+          renderTools();
+        });
+        els.clear.addEventListener("click", ()=>{
+          els.q.value = "";
+          state.q = "";
+          pushEvent("search_clear");
+          renderTools();
+        });
+        els.showFavs.addEventListener("click", ()=>{
+          state.showFavs = !state.showFavs;
+          els.showFavs.textContent = state.showFavs ? "已开启收藏" : "只看收藏";
+          pushEvent("toggle_favs", { on: state.showFavs });
+          renderTools();
+        });
+        els.submitTool.addEventListener("click", ()=>{
+          pushEvent("side_action");
+          location.hash = "#hr3-tasks";
+          els.taskTitle.focus();
+        });
+        els.fabTop.addEventListener("click", ()=>{
+          pushEvent("top");
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+        els.recToggle.addEventListener("click", ()=>{
+          state.recMode = state.recMode === "recommend" ? "recent" : "recommend";
+          renderRecButton();
+          pushEvent("rec_mode", { mode: state.recMode });
+          toast(state.recMode === "recommend" ? "已切换：推荐" : "已切换：最近");
+        });
+
+        const openD = ()=>openModal(els.mDisclaimer);
+        const openP = ()=>openModal(els.mPrivacy);
+        els.openDisclaimer.addEventListener("click", (e)=>{ e.preventDefault(); pushEvent("open_disclaimer"); openD(); });
+        els.openPrivacy.addEventListener("click", (e)=>{ e.preventDefault(); pushEvent("open_privacy"); openP(); });
+        els.footerDisclaimer.addEventListener("click", (e)=>{ e.preventDefault(); pushEvent("open_disclaimer_footer"); openD(); });
+        els.footerPrivacy.addEventListener("click", (e)=>{ e.preventDefault(); pushEvent("open_privacy_footer"); openP(); });
+        els.closeDisclaimer.addEventListener("click", ()=>closeModal(els.mDisclaimer));
+        els.closePrivacy.addEventListener("click", ()=>closeModal(els.mPrivacy));
+        els.mDisclaimer.addEventListener("click", (e)=>{ if(e.target === els.mDisclaimer) closeModal(els.mDisclaimer); });
+        els.mPrivacy.addEventListener("click", (e)=>{ if(e.target === els.mPrivacy) closeModal(els.mPrivacy); });
+        window.addEventListener("keydown", (e)=>{
+          if(e.key === "Escape"){
+            closeModal(els.mDisclaimer);
+            closeModal(els.mPrivacy);
+          }
+        });
+
+        els.addTask.addEventListener("click", ()=>{
+          const title = (els.taskTitle.value || "").trim();
+          if(!title){
+            toast("请输入任务标题");
+            return;
+          }
+          const item = { title, done:false, tag:"招聘" };
+          state.tasks.unshift(item);
+          state.tasks = state.tasks.slice(0, 30);
+          saveTasks(state.tasks);
+          els.taskTitle.value = "";
+          pushEvent("task_add", { title: title.slice(0, 40) });
+          renderTasks();
+          toast("已添加任务");
+        });
+        els.seedTask.addEventListener("click", ()=>{
+          pushEvent("task_seed");
+          const seed = [
+            { title:"需求澄清：对齐岗位目标与权重", done:false, tag:"需求" },
+            { title:"写 JD：补齐职责/要求/卖点/流程", done:false, tag:"JD" },
+            { title:"筛选口径：必备/可培养/淘汰项", done:false, tag:"筛选" },
+            { title:"面试安排：发送日程与准备说明", done:false, tag:"面试" },
+            { title:"背调：发送授权并约电话", done:false, tag:"背调" },
+            { title:"Offer：薪酬结构说明与确认截止", done:false, tag:"Offer" },
+          ];
+          state.tasks = seed.concat(state.tasks).slice(0, 30);
+          saveTasks(state.tasks);
+          renderTasks();
+          toast("已生成示例任务");
+        });
+        els.clearTask.addEventListener("click", ()=>{
+          pushEvent("task_clear");
+          state.tasks = [];
+          saveTasks(state.tasks);
+          renderTasks();
+          toast("已清空任务");
+        });
+        els.exportTask.addEventListener("click", ()=>{
+          pushEvent("task_export");
+          const txt = ["【任务列表】"].concat(state.tasks.map(t => `${t.done ? "✅" : "⬜"} ${t.title}（${t.tag || "招聘"}）`)).join("\\n");
+          copyText(txt);
+        });
+
+        els.copyNeed.addEventListener("click", ()=>{
+          pushEvent("copy_need");
+          copyText([
+            "【需求澄清要点】",
+            "- 岗位目标：试用期 1-3 个可验证交付物（含指标/时间）",
+            "- 关键协作：核心协作对象、冲突点与决策链",
+            "- 能力权重：必须/加分/可培养",
+            "- 风险点：红线与黄线（背调/合规/稳定性）"
+          ].join("\\n"));
+        });
+        els.copyJD.addEventListener("click", ()=>{
+          pushEvent("copy_jd");
+          copyText(jdTpl());
+        });
+        els.copyChannel.addEventListener("click", ()=>{
+          pushEvent("copy_channel");
+          copyText([
+            "【触达话术】",
+            "Hi {姓名}，看到你在 {领域/项目} 的经历很匹配我们当前的 {岗位}。",
+            "岗位亮点：{一句话亮点}；你将负责 {核心目标/产出}。",
+            "想了解你是否愿意聊 15 分钟？方便的话请回复可沟通时间段。",
+            "（提醒：简历/作品建议脱敏）"
+          ].join("\\n"));
+        });
+        els.copyFlow.addEventListener("click", ()=>{
+          pushEvent("copy_flow");
+          copyText([
+            "【筛选→面试→背调→Offer 流程】",
+            "1) 初筛：画像口径 + 红线",
+            "2) 面试：结构化题库 + 评分表（证据）",
+            "3) 背调：授权 + 问题清单 + 红黄线",
+            "4) Offer：薪酬结构说明 + 入职安排 + 截止确认"
+          ].join("\\n"));
+        });
+        els.copyScreen.addEventListener("click", ()=>{
+          pushEvent("copy_screen");
+          copyText(screenTpl());
+        });
+        els.copyBgQ.addEventListener("click", ()=>{
+          pushEvent("copy_bgq");
+          copyText([
+            "【背调问题框架】",
+            "1) 能力：核心优势与代表性交付是什么？",
+            "2) 协作：沟通方式、冲突处理表现如何？",
+            "3) 诚信：是否存在不一致/夸大？",
+            "4) 稳定性：离职原因是否如候选人描述？",
+            "5) 建议：如果再共事，最希望TA提升什么？"
+          ].join("\\n"));
+        });
+        els.copyOffer.addEventListener("click", ()=>{
+          pushEvent("copy_offer");
+          copyText([
+            "【Offer 沟通卡】",
+            "- 薪酬结构：固定/浮动/激励/福利",
+            "- 入职安排：日期、地点、资料",
+            "- 试用期目标：交付物与评价标准",
+            "- 确认方式：截止时间、回复渠道"
+          ].join("\\n"));
+        });
+        els.copyNote.addEventListener("click", ()=>{
+          pushEvent("copy_note");
+          copyText([
+            "【面试官记录规范】",
+            "- 每个维度写证据，不写感觉",
+            "- 评分说明理由与样例",
+            "- 结论：通过/保留/淘汰，并说明风险",
+            "- 记录候选人提问与动机"
+          ].join("\\n"));
+        });
+
+        document.addEventListener("click", (e)=>{
+          const t = e.target;
+          if(!(t instanceof HTMLElement)) return;
+          const ev = t.getAttribute("data-event");
+          if(ev){
+            pushEvent("ui", { ev });
+          }
+        }, { capture:true, passive:true });
+      }
+
+      function init(){
+        state.favs = loadFavs();
+        state.recents = loadRecents();
+        state.tasks = loadTasks();
+        renderRecButton();
+        renderTasks();
+        renderTemplates();
+        renderTools();
+        bind();
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>
